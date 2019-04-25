@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-golang-api-conf
+data:
+  nginx.conf: |
+      user  nginx;
+      worker_processes auto;
+      worker_rlimit_nofile 150000;
+
+      error_log  /var/log/nginx/error.log warn;
+      pid        /var/run/nginx.pid;
+
+
+      events {
+          worker_connections 65535;
+          multi_accept on;
+          use epoll;
+      }
+
+
+      http {
+          include       /etc/nginx/mime.types;
+          default_type  application/octet-stream;
+
+          log_format json escape=json '{'
+            '"time": "$time_iso8601",'
+            '"remoteAddress": "$remote_addr",'
+            '"host": "$host",'
+            '"user": "$remote_user",'
+            '"status": "$status",'
+            '"protocol": "$server_protocol",'
+            '"method": "$request_method",'
+            '"uri": "$request_uri",'
+            '"request": "$request",'
+            '"bodyByteSize": "$body_bytes_sent",'
+            '"requestTime": "$request_time",'
+            '"upstreamResponseTime": "$upstream_response_time",'
+            '"userAgent": "$http_user_agent",'
+            '"xForwardedFor": "$http_x_forwarded_for",'
+            '"xForwardedProto": "$http_x_forwarded_proto",'
+            '"referrer": "$http_referer"'
+          '}';
+
+          access_log  /var/log/nginx/access.log  json;
+
+
+          # コンテンツファイルの読み込みと、レスポンスの送信にsendfileシステムコールを使用する
+          sendfile   on;
+
+          # パケットの取り扱いオプションにTCP_CORKを指定します。
+          # OSのカーネルレベルでパケットを遅延させ、まとめて大きなパケットとして送信するため、送信効率が上がります。
+          tcp_nopush on;
+
+          # ソケットのTCP_NODELAYオプションを付けます。
+          # 小さなパケットを待つことなく、そのまま送信するオプションです。
+          # 待ちがないので早くなりますが、パケット数と送信量が増えます。
+          # tcp_nodelay on;
+
+          keepalive_timeout 120;
+          client_max_body_size 100m;
+
+          gzip  on;
+          gzip_static       on;
+          gzip_http_version 1.1;
+          gzip_comp_level   2;
+          gzip_proxied      any;
+          gzip_vary         on;
+          gzip_buffers      4 8k;
+          gzip_min_length   3k;
+          gzip_types        text/plain
+                            text/xml
+                            text/css
+                            text/javascript
+                            application/xml
+                            application/xhtml+xml
+                            application/rss+xml
+                            application/atom_xml
+                            application/javascript
+                            application/json
+                            application/x-javascript
+                            application/x-httpd-php;
+          gzip_disable      "MSIE [1-6]\.";
+          gzip_disable      "Mozilla/4";
+
+          server_tokens off;
+          server_name_in_redirect off;
+
+          include /etc/nginx/conf.d/*.conf;
+      }
+  default.conf: |
+    server {
+        server_name _;
+
+        root /var/opt;
+
+        ## listen for ipv4; this line is default and implied
+        listen 80;
+
+        ## listen for ipv6
+        # listen [::]:80 default ipv6only=on;
+
+        index index.html index.htm index.php;
+
+        charset utf-8;
+
+        # Disable sendfile as per https://docs.vagrantup.com/v2/synced-folders/virtualbox.html
+        sendfile off;
+
+        location = /_.gif { empty_gif; access_log off; log_not_found off; }
+
+        location ~ ^/wep {
+            fastcgi_pass 127.0.0.1:8000;
+            include fastcgi_params;
+            fastcgi_intercept_errors off;
+            fastcgi_buffer_size 16k;
+            fastcgi_buffers 4 16k;
+            fastcgi_connect_timeout 300;
+            fastcgi_send_timeout 300;
+            fastcgi_read_timeout 300;
+        }
+
+        # deny access to dotfiles, for security
+        location ~ /\. {
+            log_not_found off;
+            deny all;
+        }
+    }

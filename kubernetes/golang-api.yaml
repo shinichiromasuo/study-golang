@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-api
+  labels:
+    app: golang-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang-api
+  template:
+    metadata:
+      labels:
+        app: golang-api
+    spec:
+      containers:
+        - name: nginx
+          image: whiteplus/nginx-tz-tokyo:1.13-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-default-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: html-root
+              mountPath: /var/opt:cached
+        - name: golang-api
+          image: acht/start-golang-api:debian-stretch-v2
+          # env:
+            # - name: APP_ENV
+            #   value: local
+          ports:
+            - containerPort: 8000
+      volumes:
+        - name: html-root
+          hostPath:
+            path: {{ PROJECT_DIR }}/asset
+            type: Directory
+        - name: nginx-conf
+          configMap:
+            name: nginx-golang-api-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: nginx-default-conf
+          configMap:
+            name: nginx-golang-api-conf
+            items:
+              - key: default.conf
+                path: default.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-api
+spec:
+  selector:
+    app: golang-api
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      nodePort: 32744
+      port: 80
+      targetPort: 80
