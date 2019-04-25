@@ -30,9 +30,13 @@ spec:
               mountPath: /var/opt:cached
         - name: golang-api
           image: acht/start-golang-api:debian-stretch-v2
-          # env:
-            # - name: APP_ENV
-            #   value: local
+          env:
+            - name: APP_DB_ENDPOINT
+              value: docker.for.mac.host.internal
+            - name: APP_DB_USER
+              value: root
+            - name: APP_DB_PASSWORD
+              value: shibuya
           ports:
             - containerPort: 8000
       volumes:
