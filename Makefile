@@ -1,5 +1,5 @@
 GO  := $(shell which go)
-APP := $(GOPATH)/src/github.com/WHITEPLUS/study-golang
+APP := $(GOPATH)/src/github.com/$(GITHUB_USER)/study-golang
 POD_NAME := $(shell kubectl get po -o=jsonpath='{.items[?(@.metadata.labels.app=="golang-api")].metadata.name}')
 
 .PHONY: kube-create dev-deploy start

@@ -1,7 +1,7 @@
 GO     := $(shell which go)
 
 BIN := golang-api
-APP := github.com/WHITEPLUS/study-golang/chap1
+APP := github.com/$(GITHUB_USER)/study-golang/chap1
 
 CODES     := $(shell find . -type f -name '*.go' | grep -v "^./vendor")
 PACKAGES  := $(shell find . -maxdepth 1 -type d | grep -Ev "^(.|./\..*|./data|./vendor|./kubernetes|./bin)$$" | sed -E 's/$$/\/.../g' | xargs go list)
@@ -11,7 +11,7 @@ BIN_DIST  := $(BIN)-$(shell date '+%Y%m%d-%H%M')-$(REVISION)
 POD_NAME := $(shell kubectl get po -o=jsonpath='{.items[?(@.metadata.labels.app=="golang-api")].metadata.name}')
 
 VENDOR_MD5 := $(shell if [[ -f vendor/lock.md5 ]]; then cat vendor/lock.md5; fi)
-GOPKG_MD5 := 
+GOPKG_MD5 :=
 ifneq ($(shell type md5 2> /dev/null),)
 GOPKG_MD5 :=  $(shell md5 -q Gopkg.lock)
 endif
