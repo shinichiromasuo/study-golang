@@ -4,6 +4,12 @@ POD_NAME := $(shell kubectl get po -o=jsonpath='{.items[?(@.metadata.labels.app=
 
 .PHONY: kube-create dev-deploy start
 
+kube-clean:
+	sed -e "s#{{ PROJECT_DIR }}#$(APP)#g" kubernetes/golang-api.yaml | \
+	kubectl delete \
+		-f - \
+		-f kubernetes/nginx-conf.yaml
+
 kube-create:
 	sed -e "s#{{ PROJECT_DIR }}#$(APP)#g" kubernetes/golang-api.yaml | \
 	kubectl apply \

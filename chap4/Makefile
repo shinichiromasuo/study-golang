@@ -62,7 +62,7 @@ ls-packages:
 
 
 build: vendor
-	$(GO) build -i -gcflags "-N -l" -o $(BIN) ./*.go
+	GOOS=linux GOARCH=amd64 $(GO) build -i -gcflags "-N -l" -o $(BIN) ./*.go
 
 
 .PHONY: deploy
