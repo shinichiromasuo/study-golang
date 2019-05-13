@@ -6,19 +6,24 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/onlyPost", handlerOnlyPost)
+	http.HandleFunc("/main", handlerOnlyPost)
 	http.ListenAndServe(":8080", nil)
 }
 
 func handlerOnlyPost(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-		w.Write([]byte("to do post only \n"))
+	if r.Method == http.MethodGet {
+		w.Write([]byte("get request \n"))
+		log.Printf("post request")
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		w.Write([]byte("post request \n"))
 		log.Printf("get request")
 		return
 	}
 
-	w.Write([]byte("OK \n"))
-	log.Printf("post request")
+	w.Write([]byte("Other than GET,POST Request \n"))
+	log.Printf("Other than GET,POST Request")
 }
