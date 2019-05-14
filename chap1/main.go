@@ -24,11 +24,13 @@ func handlerMain(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 		w.Write([]byte("get request \n"))
-		log.Printf("post request")
+		log.Printf("get request")
 		return
 	}
 
 	if r.Method == http.MethodPost {
+		w.Write([]byte("post request \n"))
+		log.Printf("post request")
 
 		if r.Header.Get("Content-Type") == "application/json" {
 			dec := json.NewDecoder(r.Body)
