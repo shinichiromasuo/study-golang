@@ -3,15 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
 )
 
 type User struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	ID       int         `json:"id"`
+	Name     string      `json:"name"`
+	Password string      `json:"password"`
+	Array    interface{} `json:"array"`
 }
 
 func main() {
@@ -34,9 +36,12 @@ func handlerMain(w http.ResponseWriter, r *http.Request) {
 
 		if r.Header.Get("Content-Type") == "application/json" {
 			dec := json.NewDecoder(r.Body)
-			var reqJson map[string]interface{}
-			dec.Decode(&reqJson)
-			fmt.Printf("%v\n", reqJson)
+			var user User
+			dec.Decode(&user)
+
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "  ")
+			encoder.Encode(user)
 
 			return
 		}
@@ -45,12 +50,16 @@ func handlerMain(w http.ResponseWriter, r *http.Request) {
 			mulForm := r.FormValue("aaa")
 			fmt.Println(mulForm)
 
+			fmt.Fprint(w, mulForm)
 			return
 		}
 
 		if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 			xform := r.FormValue("aaa")
 			fmt.Println(xform)
+
+			tmp := template.Must(template.ParseFiles("../asset/index.html"))
+			tmp.ExecuteTemplate(w, "index.html", xform)
 
 			return
 		}
