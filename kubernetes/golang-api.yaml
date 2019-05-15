@@ -37,6 +37,9 @@ spec:
               value: root
             - name: APP_DB_PASSWORD
               value: shibuya
+          volumeMounts:
+            - name: html-root
+              mountPath: /var/opt:cached
           ports:
             - containerPort: 8000
       volumes:
