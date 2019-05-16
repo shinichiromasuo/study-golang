@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  # MySQL
+  db:
+    image: mysql:5.7
+    container_name: mysql_golang
+    environment:
+      MYSQL_ROOT_PASSWORD: shibuya
+      MYSQL_DATABASE: study_golang
+      MYSQL_USER: root
+      MYSQL_PASSWORD: shibuya
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - 3306:3306
